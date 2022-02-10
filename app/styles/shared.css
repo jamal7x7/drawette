@@ -1,0 +1,72 @@
+.topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  /* background-color: #f0e; */
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.toolbar {
+  /* Auto layout */
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+
+  /* width: 312px; */
+  height: 56px;
+
+  /* palette/gray/800 */
+
+  background: #27272a;
+  /* palette/gray/700 */
+
+  border: 1px solid #3f3f46;
+  box-sizing: border-box;
+  /* Shadows-300 */
+
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.04),
+    0px 16px 14px -12px rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+}
+
+.button {
+  /* Auto layout */
+
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 8px 8px;
+
+  /* width: 40px;
+  height: 40px; */
+  /* left: 8px;
+  top: 8px; */
+
+  background: linear-gradient(0deg, #18181b, #18181b);
+  border-radius: 12px;
+
+  /* Inside auto layout */
+
+  /* flex: none;
+  order: 0;
+  flex-grow: 0;
+  margin: 0px 40px; */
+}
+
+.icon24 {
+  /* Icon_base_24 */
+
+  position: static;
+  width: 24px;
+  height: 24px;
+  left: 8px;
+  top: 8px;
+}
