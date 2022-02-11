@@ -12,7 +12,7 @@
 
 .toolbar {
   /* Auto layout */
-
+  backdrop-filter: blur(8px);
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -25,10 +25,11 @@
 
   /* palette/gray/800 */
 
-  background: #27272a;
+  background: #27272a88;
   /* palette/gray/700 */
 
-  border: 1px solid #3f3f46;
+  /* border: 1px solid #3f3f46; */
+  border: 1px solid #303036;
   box-sizing: border-box;
   /* Shadows-300 */
 
@@ -50,7 +51,9 @@
   /* left: 8px;
   top: 8px; */
 
-  background: linear-gradient(0deg, #18181b, #18181b);
+  /* background: linear-gradient(0deg, #18181b, #18181b); */
+  /* background: linear-gradient(45deg, #65039e, #f0e); */
+  /* background-color: #f0e; */
   border-radius: 12px;
 
   /* Inside auto layout */
@@ -61,9 +64,16 @@
   margin: 0px 40px; */
 }
 
+.s {
+  /* background: linear-gradient(35deg, #18181b, #18181b); */
+  background-color: #00e;
+  /* box-shadow: 0px 2px 8px rgba(0, 71, 252, 0.946),
+    0px 8px 14px -6px rgba(212, 0, 255, 0.748); */
+}
+
 .icon24 {
   /* Icon_base_24 */
-
+  /* background-color: #f0e; */
   position: static;
   width: 24px;
   height: 24px;

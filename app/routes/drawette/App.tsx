@@ -1,20 +1,27 @@
 import { atom, useAtom, Provider } from 'jotai'
-import { Children } from 'react'
+import { Children, useEffect } from 'react'
+
+// let WINDOW_WIDTH = atom(window.innerWidth)
+// let WINDOW_HEIGHT = atom(window.innerHeight)
+
 const ScreenMousePositionOnCanvas = atom({})
 const MousePositionOnCanvas = atom({})
+const ScreenMousePosition = atom({ x: 600, y: 400 })
 
 const MouseDownAtom = atom('')
 const MousePosition = atom({ x: 600, y: 400 })
-const ScreenMousePosition = atom({ x: 600, y: 400 })
 const ObjectList = atom([
-  {
-    id: Date.now(),
-    x: 400,
-    y: 400,
-  },
+  { id: Date.now(), x: 100, y: 100, width: 100, heigth: 100 },
 ])
 
+let WINDOW_WIDTH = 1400
+let WINDOW_HEIGHT = 1000
 export default function App() {
+  // useEffect(() => {
+  //   WINDOW_WIDTH = window.innerWidth
+  //   WINDOW_HEIGHT = window.innerHeight
+  // }, [])
+
   const [mousePositiononOnCanvas, setMousePositiononOnCanvas] = useAtom(
     MousePositionOnCanvas
   )
@@ -26,26 +33,45 @@ export default function App() {
   const [mousePosition, setMousePosition] = useAtom(MousePosition)
   const [screenMousePosition, setScreenMousePosition] =
     useAtom(ScreenMousePosition)
-  const [Recs, setRecs] = useAtom(ObjectList)
+  const [Rects, setRects] = useAtom(ObjectList)
+
+  let mousePose0 = { x: 50, y: 50 }
+  let shapePose0 = { x: 0, y: 0 }
 
   function handleClick(e) {
-    setRecs((prev) => [...prev, mousePosition])
+    // setRecs((prev) => [...prev, mousePosition])
   }
 
-  function handleMouseLeave(e) {
-    setMouseDown((prev) => 'mouse up')
+  function handleMouseLeave(e, id) {
+    // setMouseDown((prev) => 'mouse down')
+    handleOnMouseMove(e, id)
   }
-  function handleOnmousemove(e) {
+  function handleOnMouseMove(e, id) {
     // console.log('mouse location:', e.clientX, e.clientY)
     // let bx = e.target.x.baseVal.value
     // let by = e.target.y.baseVal.value
     // e.target.x.baseVal.value = e.clientX
     // e.target.y.baseVal.value = e.clientY
+
+    // let mpx = mousePosition.x
+    // let mpy = mousePosition.y
+    // mouseDown === 'mouse down' &&
+    //   setMousePosition((prev) => ({
+    //     x: e.clientX + (bx - mpx),
+    //     y: e.clientY + (by - mpy),
+    //   }))
+
     mouseDown === 'mouse down' &&
-      setMousePosition((prev) => ({
-        x: e.clientX,
-        y: e.clientY,
-      }))
+      setRects([
+        ...Rects.filter((r) => r.id !== id),
+        {
+          id: id,
+          x: e.clientX - 50,
+          y: e.clientY - 50,
+          width: 100,
+          heigth: 100,
+        },
+      ])
 
     mouseDown === 'mouse down' &&
       setScreenMousePosition((prev) => ({
@@ -68,10 +94,12 @@ export default function App() {
     console.log(mouseDown)
   }
 
-  function handleDown(e) {
+  function handleDown(e, i) {
     setMouseDown((prev) => 'mouse down')
-    // console.log('----mouse down')
+    console.log('----mouse down', e)
     // logMouse()
+    // shapePose0 = { x: e.target.x.baseVal.value, y: e.target.x.baseVal.value }
+    // mousePose0 = { x: e.clientX, y: e.clientY }
   }
   function handleUp(e) {
     setMouseDown((prev) => 'mouse up')
@@ -88,7 +116,7 @@ export default function App() {
     >
       <div className='topbar'>
         <div className='toolbar'>
-          <Button>
+          <Button cn={'button s'}>
             {' '}
             <svg
               name='move'
@@ -194,15 +222,15 @@ export default function App() {
       <svg
         onMouseMove={(e) => handleOnMousemoveOnCanvas(e)}
         z-index='1'
-        width='100%'
-        height='100%'
-        viewBox='0 0 1440 1024'
+        width={WINDOW_WIDTH}
+        height={WINDOW_HEIGHT}
+        viewBox={`0 0 ${WINDOW_WIDTH} ${WINDOW_HEIGHT}`}
         fill='none'
         xmlns='http://www.w3.org/2000/svg'
       >
         <rect width='100%' height='100%' fill='#18181B' />
 
-        <rect
+        {/* <rect
           // transform={`translate(${299} ${200})`}
           x='1200'
           y='70'
@@ -210,22 +238,26 @@ export default function App() {
           height='80'
           fill='#0000ff'
           onClick={(e) => handleClick(e)}
-        />
+        /> */}
         <Provider>
-          {Recs.map((rec, i) => {
+          {Rects.map((rec, i) => {
             return (
               <rect
-                key={i}
-                onMouseMove={(e) => handleOnmousemove(e)}
+                // z-index='1000'
+                key={rec.id}
+                onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+                onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
                 // onDrag={(e) => handleOnmousemove(e)}
-                x={mousePosition.x}
-                y={mousePosition.y}
-                width='100'
-                height='100'
+                x={rec.x}
+                y={rec.y}
+                width={rec.width}
+                height={rec.heigth}
                 fill='#ff00ff'
-                onMouseDown={(e) => handleDown(e)}
+                onMouseDown={(e) => handleDown(e, rec.id)}
+                onTouchStart={(e) => handleDown(e, rec.id)}
                 onMouseUp={(e) => handleUp(e)}
-                onMouseLeave={(e) => handleMouseLeave(e)}
+                onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
+                onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
               />
             )
           })}
@@ -251,19 +283,50 @@ export default function App() {
           screenMousePosition: {screenMousePositionOnCanvas.x},
           {screenMousePositionOnCanvas.y}
         </text>
+        <text x='12' y='90' fill='#ff00b7'>
+          RectPosition: {Rects[0].x},{Rects[0].y}
+        </text>
       </svg>
     </div>
   )
 }
 
-export function Button({ children }) {
+export function Button({ cn = 'button', children }) {
+  const [Rects, setRects] = useAtom(ObjectList)
+
   function hundleToolClick(e) {
-    // e.preventDefault()
-    console.log(e)
+    e.preventDefault()
+    console.log(Rects)
+    setRects([
+      ...Rects,
+      {
+        id: Date.now(),
+        x: WINDOW_WIDTH / 4,
+        y: WINDOW_HEIGHT / 4,
+        width: 100,
+        heigth: 100,
+      },
+    ])
+  }
+  function handleOnMouseOver(e) {
+    // console.log(e)
+    // this.style.background = '#0F0'
+    // e.target.style.background = '#f0e'
+  }
+  function handleOnMouseout(e) {
+    // console.log(e)
+    // this.style.background = '#0F0'
+    // e.target.style.background = '#00000000'
   }
 
   return (
-    <div className='button' onClick={(e) => hundleToolClick(e)}>
+    <div
+      onMouseOver={(e) => handleOnMouseOver(e)}
+      onMouseOut={(e) => handleOnMouseout(e)}
+      // onMouseOut={(e) => (this.style.background = '#00F')}
+      className={cn}
+      onClick={(e) => hundleToolClick(e)}
+    >
       <div className='icon24'>{children}</div>
     </div>
   )
