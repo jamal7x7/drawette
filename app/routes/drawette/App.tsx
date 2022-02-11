@@ -11,11 +11,12 @@ const ScreenMousePosition = atom({ x: 600, y: 400 })
 const MouseDownAtom = atom('')
 const MousePosition = atom({ x: 600, y: 400 })
 const ObjectList = atom([
-  { id: Date.now(), x: 100, y: 100, width: 100, heigth: 100 },
+  { id: Date.now(), x: 400, y: 400, width: 100, heigth: 100 },
 ])
 
 let WINDOW_WIDTH = 1400
-let WINDOW_HEIGHT = 1000
+let WINDOW_HEIGHT = 800
+
 export default function App() {
   // useEffect(() => {
   //   WINDOW_WIDTH = window.innerWidth
@@ -38,9 +39,7 @@ export default function App() {
   let mousePose0 = { x: 50, y: 50 }
   let shapePose0 = { x: 0, y: 0 }
 
-  function handleClick(e) {
-    // setRecs((prev) => [...prev, mousePosition])
-  }
+  function handleRectClick(e, id) {}
 
   function handleMouseLeave(e, id) {
     // setMouseDown((prev) => 'mouse down')
@@ -253,6 +252,7 @@ export default function App() {
                 width={rec.width}
                 height={rec.heigth}
                 fill='#ff00ff'
+                onClick={(e) => handleRectClick(e, rec.id)}
                 onMouseDown={(e) => handleDown(e, rec.id)}
                 onTouchStart={(e) => handleDown(e, rec.id)}
                 onMouseUp={(e) => handleUp(e)}
@@ -283,9 +283,17 @@ export default function App() {
           screenMousePosition: {screenMousePositionOnCanvas.x},
           {screenMousePositionOnCanvas.y}
         </text>
-        <text x='12' y='90' fill='#ff00b7'>
+        {/* <text x='12' y='90' fill='#ff00b7'>
           RectPosition: {Rects[0].x},{Rects[0].y}
-        </text>
+        </text> */}
+
+        {Rects.map((r, i) => (
+          <>
+            <text key={r.id} x='12' y={90 + 16 * i} fill='#ff00b7'>
+              RectId:{r.id} i: {i} Pos: {r.x},{r.y}
+            </text>
+          </>
+        ))}
       </svg>
     </div>
   )
