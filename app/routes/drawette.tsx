@@ -1,9 +1,12 @@
 import { Outlet } from 'remix'
+import { Provider } from 'jotai'
 
 export default function Drawette() {
   return (
     <div>
-      <Outlet />
+      <Provider>
+        <Outlet />
+      </Provider>
     </div>
   )
 }

@@ -1,21 +1,22 @@
-import { atom, useAtom, Provider } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import { Children, useEffect } from 'react'
 
 // let WINDOW_WIDTH = atom(window.innerWidth)
 // let WINDOW_HEIGHT = atom(window.innerHeight)
 
+let WINDOW_WIDTH = 1400
+let WINDOW_HEIGHT = 800
+
 const ScreenMousePositionOnCanvas = atom({})
 const MousePositionOnCanvas = atom({})
 const ScreenMousePosition = atom({ x: 600, y: 400 })
 
+const ShowHelpersAtom = atom(true)
 const MouseDownAtom = atom('')
 const MousePosition = atom({ x: 600, y: 400 })
 const ObjectList = atom([
-  { id: Date.now(), x: 400, y: 400, width: 100, heigth: 100 },
+  { id: Date.now(), x: 400, y: 400, width: 100, heigth: 100, color: '#f0e' },
 ])
-
-let WINDOW_WIDTH = 1400
-let WINDOW_HEIGHT = 800
 
 export default function App() {
   // useEffect(() => {
@@ -29,6 +30,8 @@ export default function App() {
   const [screenMousePositionOnCanvas, setScreenMousePositionOnCanvas] = useAtom(
     ScreenMousePositionOnCanvas
   )
+
+  const [showHelpers, setShowHelpers] = useAtom(ShowHelpersAtom)
 
   const [mouseDown, setMouseDown] = useAtom(MouseDownAtom)
   const [mousePosition, setMousePosition] = useAtom(MousePosition)
@@ -69,6 +72,7 @@ export default function App() {
           y: e.clientY - 50,
           width: 100,
           heigth: 100,
+          color: '#0fe',
         },
       ])
 
@@ -113,6 +117,26 @@ export default function App() {
         overflow: 'hidden',
       }}
     >
+      <div>
+        <ShowHelpersButton cn={'button showHelpers'}>
+          {' '}
+          <svg
+            name='move'
+            width='24'
+            height='24'
+            viewBox='0 0 24 24'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+          >
+            <path
+              d='M7.61269 4.9957L10.3526 19.3133L13.876 14.6404L19.578 13.3222L7.61269 4.9957Z'
+              stroke='#F5F5F5'
+              strokeWidth='2'
+            />
+          </svg>
+        </ShowHelpersButton>
+      </div>
+
       <div className='topbar'>
         <div className='toolbar'>
           <Button cn={'button s'}>
@@ -238,62 +262,64 @@ export default function App() {
           fill='#0000ff'
           onClick={(e) => handleClick(e)}
         /> */}
-        <Provider>
-          {Rects.map((rec, i) => {
-            return (
-              <rect
-                // z-index='1000'
-                key={rec.id}
-                onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
-                onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
-                // onDrag={(e) => handleOnmousemove(e)}
-                x={rec.x}
-                y={rec.y}
-                width={rec.width}
-                height={rec.heigth}
-                fill='#ff00ff'
-                onClick={(e) => handleRectClick(e, rec.id)}
-                onMouseDown={(e) => handleDown(e, rec.id)}
-                onTouchStart={(e) => handleDown(e, rec.id)}
-                onMouseUp={(e) => handleUp(e)}
-                onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
-                onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
-              />
-            )
-          })}
-        </Provider>
 
-        {mouseDown === 'mouse down' && (
-          <>
-            <rect x='0' y='700' width='1600' height='10' fill='#00eeff' />
-            <text x='1200' y='50' fill='#00eeff'>
-              mousePosition: {mousePosition.x},{mousePosition.y}
+        {Rects.map((rec, i) => {
+          return (
+            <rect
+              // z-index='1000'
+              key={rec.id}
+              onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+              onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
+              // onDrag={(e) => handleOnmousemove(e)}
+              x={rec.x}
+              y={rec.y}
+              width={rec.width}
+              height={rec.heigth}
+              fill={rec.color}
+              onClick={(e) => handleRectClick(e, rec.id)}
+              onMouseDown={(e) => handleDown(e, rec.id)}
+              onTouchStart={(e) => handleDown(e, rec.id)}
+              onMouseUp={(e) => handleUp(e)}
+              onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
+              onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
+            />
+          )
+        })}
+
+        {showHelpers && (
+          // Show Helpers and Stats
+          <g>
+            {mouseDown === 'mouse down' && (
+              <>
+                <rect x='0' y='700' width='1600' height='10' fill='#00eeff' />
+                <text x='1200' y='50' fill='#00eeff'>
+                  mousePosition: {mousePosition.x},{mousePosition.y}
+                </text>
+                <text x='1200' y='70' fill='#ff5100'>
+                  screenMousePosition: {screenMousePosition.x},
+                  {screenMousePosition.y}
+                </text>
+              </>
+            )}
+
+            <text x='12' y='50' fill='#00eeff'>
+              mousePosition: {mousePositiononOnCanvas.x},
+              {mousePositiononOnCanvas.y}
             </text>
-            <text x='1200' y='70' fill='#ff5100'>
-              screenMousePosition: {screenMousePosition.x},
-              {screenMousePosition.y}
+            <text x='12' y='70' fill='#ff5100'>
+              screenMousePosition: {screenMousePositionOnCanvas.x},
+              {screenMousePositionOnCanvas.y}
             </text>
-          </>
+
+            {Rects.map((r, i) => (
+              <>
+                <text key={r.id} x='12' y={90 + 16 * i} fill='#ff00b7'>
+                  RectId:{r.id} i: {i} Pos: {r.x},{r.y}
+                </text>
+              </>
+            ))}
+          </g>
         )}
-
-        <text x='12' y='50' fill='#00eeff'>
-          mousePosition: {mousePositiononOnCanvas.x},{mousePositiononOnCanvas.y}
-        </text>
-        <text x='12' y='70' fill='#ff5100'>
-          screenMousePosition: {screenMousePositionOnCanvas.x},
-          {screenMousePositionOnCanvas.y}
-        </text>
-        {/* <text x='12' y='90' fill='#ff00b7'>
-          RectPosition: {Rects[0].x},{Rects[0].y}
-        </text> */}
-
-        {Rects.map((r, i) => (
-          <>
-            <text key={r.id} x='12' y={90 + 16 * i} fill='#ff00b7'>
-              RectId:{r.id} i: {i} Pos: {r.x},{r.y}
-            </text>
-          </>
-        ))}
       </svg>
     </div>
   )
@@ -303,7 +329,7 @@ export function Button({ cn = 'button', children }) {
   const [Rects, setRects] = useAtom(ObjectList)
 
   function hundleToolClick(e) {
-    e.preventDefault()
+    // e.stopProppagation()
     console.log(Rects)
     setRects([
       ...Rects,
@@ -313,8 +339,42 @@ export function Button({ cn = 'button', children }) {
         y: WINDOW_HEIGHT / 4,
         width: 100,
         heigth: 100,
+        color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+          Math.random() * 255
+        )}, ${Math.floor(Math.random() * 255)})`,
       },
     ])
+  }
+  function handleOnMouseOver(e) {
+    // console.log(e)
+    // this.style.background = '#0F0'
+    // e.target.style.background = '#f0e'
+  }
+  function handleOnMouseout(e) {
+    // console.log(e)
+    // this.style.background = '#0F0'
+    // e.target.style.background = '#00000000'
+  }
+
+  return (
+    <div
+      onMouseOver={(e) => handleOnMouseOver(e)}
+      onMouseOut={(e) => handleOnMouseout(e)}
+      // onMouseOut={(e) => (this.style.background = '#00F')}
+      className={cn}
+      onClick={(e) => hundleToolClick(e)}
+    >
+      <div className='icon24'>{children}</div>
+    </div>
+  )
+}
+
+export function ShowHelpersButton({ cn = 'button', children }) {
+  const [showHelpers, setShowHelpers] = useAtom(ShowHelpersAtom)
+
+  function hundleToolClick(e) {
+    // e.stopProppagation()
+    setShowHelpers((prev) => !prev)
   }
   function handleOnMouseOver(e) {
     // console.log(e)
