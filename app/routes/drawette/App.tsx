@@ -1,5 +1,5 @@
 import { atom, useAtom } from 'jotai'
-import { Children, useEffect } from 'react'
+import { v4 as uuid } from 'uuid'
 
 // let WINDOW_WIDTH = atom(window.innerWidth)
 // let WINDOW_HEIGHT = atom(window.innerHeight)
@@ -12,10 +12,19 @@ const MousePositionOnCanvas = atom({})
 const ScreenMousePosition = atom({ x: 600, y: 400 })
 
 const ShowHelpersAtom = atom(true)
+const ObjectSelected = atom(false)
 const MouseDownAtom = atom('')
 const MousePosition = atom({ x: 600, y: 400 })
 const ObjectList = atom([
-  { id: Date.now(), x: 400, y: 400, width: 100, heigth: 100, color: '#f0e' },
+  {
+    id: uuid(),
+    x: 400,
+    y: 400,
+    width: 100,
+    heigth: 100,
+    color: '#f0e',
+    selected: false,
+  },
 ])
 
 export default function App() {
@@ -38,11 +47,24 @@ export default function App() {
   const [screenMousePosition, setScreenMousePosition] =
     useAtom(ScreenMousePosition)
   const [Rects, setRects] = useAtom(ObjectList)
+  const [selected, setSelected] = useAtom(ObjectSelected)
 
   let mousePose0 = { x: 50, y: 50 }
   let shapePose0 = { x: 0, y: 0 }
 
-  function handleRectClick(e, id) {}
+  function handleRectClick(e, id) {
+    console.log(e.target.key, id)
+    setRects([
+      ...Rects.map((r) => {
+        if (r.id === id) {
+          r.selected = true
+        } else {
+          r.selected = false
+        }
+        return r
+      }),
+    ])
+  }
 
   function handleMouseLeave(e, id) {
     // setMouseDown((prev) => 'mouse down')
@@ -67,6 +89,7 @@ export default function App() {
       setRects([
         ...Rects.filter((r) => r.id !== id),
         {
+          selected: false,
           id: id,
           x: e.clientX - 50,
           y: e.clientY - 50,
@@ -99,15 +122,17 @@ export default function App() {
 
   function handleDown(e, i) {
     setMouseDown((prev) => 'mouse down')
-    console.log('----mouse down', e)
+    // console.log('----mouse down', e)
     // logMouse()
     // shapePose0 = { x: e.target.x.baseVal.value, y: e.target.x.baseVal.value }
     // mousePose0 = { x: e.clientX, y: e.clientY }
+    setSelected((prev) => !prev)
   }
   function handleUp(e) {
     setMouseDown((prev) => 'mouse up')
     // console.log('----mouse up')
     // logMouse()
+    setSelected((prev) => !prev)
   }
   return (
     <div
@@ -129,17 +154,18 @@ export default function App() {
             xmlns='http://www.w3.org/2000/svg'
           >
             <path
-              d='M7.61269 4.9957L10.3526 19.3133L13.876 14.6404L19.578 13.3222L7.61269 4.9957Z'
+              d='M18.364 9.77818L20.6642 12.0784L18.3637 14.3788C14.849 17.8935 9.15049 17.8935 5.63577 14.3788L3.33558 12.0786L5.63604 9.77818C9.15075 6.26346 14.8492 6.26346 18.364 9.77818Z'
               stroke='#F5F5F5'
-              strokeWidth='2'
+              stroke-width='2'
             />
+            <circle cx='12' cy='12' r='3' fill='#F5F5F5' />
           </svg>
         </ShowHelpersButton>
       </div>
 
       <div className='topbar'>
         <div className='toolbar'>
-          <Button cn={'button s'}>
+          <Button cn={'button selected'}>
             {' '}
             <svg
               name='move'
@@ -314,7 +340,8 @@ export default function App() {
             {Rects.map((r, i) => (
               <>
                 <text key={r.id} x='12' y={90 + 16 * i} fill='#ff00b7'>
-                  RectId:{r.id} i: {i} Pos: {r.x},{r.y}
+                  RectId:{r.id} i: {i} Pos: {r.x},{r.y} ----{'>'}{' '}
+                  {r.selected ? 'selected' : 'not selected'}
                 </text>
               </>
             ))}
@@ -330,11 +357,12 @@ export function Button({ cn = 'button', children }) {
 
   function hundleToolClick(e) {
     // e.stopProppagation()
-    console.log(Rects)
+    // console.log(Rects)
     setRects([
       ...Rects,
       {
-        id: Date.now(),
+        selected: false,
+        id: uuid(),
         x: WINDOW_WIDTH / 4,
         y: WINDOW_HEIGHT / 4,
         width: 100,
@@ -357,7 +385,7 @@ export function Button({ cn = 'button', children }) {
   }
 
   return (
-    <div
+    <button
       onMouseOver={(e) => handleOnMouseOver(e)}
       onMouseOut={(e) => handleOnMouseout(e)}
       // onMouseOut={(e) => (this.style.background = '#00F')}
@@ -365,7 +393,7 @@ export function Button({ cn = 'button', children }) {
       onClick={(e) => hundleToolClick(e)}
     >
       <div className='icon24'>{children}</div>
-    </div>
+    </button>
   )
 }
 
@@ -388,7 +416,7 @@ export function ShowHelpersButton({ cn = 'button', children }) {
   }
 
   return (
-    <div
+    <button
       onMouseOver={(e) => handleOnMouseOver(e)}
       onMouseOut={(e) => handleOnMouseout(e)}
       // onMouseOut={(e) => (this.style.background = '#00F')}
@@ -396,6 +424,6 @@ export function ShowHelpersButton({ cn = 'button', children }) {
       onClick={(e) => hundleToolClick(e)}
     >
       <div className='icon24'>{children}</div>
-    </div>
+    </button>
   )
 }
