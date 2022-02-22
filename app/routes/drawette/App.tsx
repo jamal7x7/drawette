@@ -15,17 +15,17 @@ const ShowHelpersAtom = atom(true)
 const ObjectSelected = atom(false)
 const MouseDownAtom = atom('')
 const MousePosition = atom({ x: 600, y: 400 })
-const ObjectList = atom([
+const ObjectList = atom<
   {
-    id: uuid(),
-    x: 400,
-    y: 400,
-    width: 100,
-    heigth: 100,
-    color: '#f0e',
-    selected: false,
-  },
-])
+    id: string
+    x: number
+    y: number
+    width: number
+    heigth: number
+    color: string
+    selected: boolean
+  }[]
+>([])
 
 export default function App() {
   // useEffect(() => {
@@ -53,13 +53,16 @@ export default function App() {
   let shapePose0 = { x: 0, y: 0 }
 
   function handleRectClick(e, id) {
+    e.stopPropagation()
     console.log(e.target.key, id)
     setRects([
       ...Rects.map((r) => {
         if (r.id === id) {
           r.selected = true
+          // r.color = '#00e'
         } else {
           r.selected = false
+          // r.color = r.color
         }
         return r
       }),
@@ -71,6 +74,7 @@ export default function App() {
     handleOnMouseMove(e, id)
   }
   function handleOnMouseMove(e, id) {
+    e.stopPropagation()
     // console.log('mouse location:', e.clientX, e.clientY)
     // let bx = e.target.x.baseVal.value
     // let by = e.target.y.baseVal.value
@@ -87,17 +91,31 @@ export default function App() {
 
     mouseDown === 'mouse down' &&
       setRects([
-        ...Rects.filter((r) => r.id !== id),
-        {
-          selected: false,
-          id: id,
-          x: e.clientX - 50,
-          y: e.clientY - 50,
-          width: 100,
-          heigth: 100,
-          color: '#0fe',
-        },
+        ...Rects.map((r) => {
+          if (r.id === id) {
+            r = {
+              ...r,
+              id: id,
+              selected: false,
+              x: e.clientX - 50,
+              y: e.clientY - 50,
+            }
+          }
+          return r
+        }),
       ])
+    // setRects(Rects => ([
+    //   ...Rects.filter((r) => r.id !== id),
+    //   {
+    //     selected: false,
+    //     id: id,
+    //     x: e.clientX - 50,
+    //     y: e.clientY - 50,
+    //     width: 100,
+    //     heigth: 100,
+    //     color: r.color,
+    //   },
+    // ]))
 
     mouseDown === 'mouse down' &&
       setScreenMousePosition((prev) => ({
@@ -134,6 +152,26 @@ export default function App() {
     // logMouse()
     setSelected((prev) => !prev)
   }
+
+  function handleOnClickOnCanvas(
+    e: MouseEvent<SVGSVGElement, MouseEvent>
+  ): void {
+    e.stopPropagation()
+    console.log('----mouse click', e)
+    setRects([
+      ...Rects.map((r) => {
+        if (r.selected) {
+          r.selected = false
+        }
+        return r
+      }),
+    ])
+  }
+
+  // RETURN
+  // RETURN
+  // RETURN
+  // RETURN
   return (
     <div
       style={{
@@ -156,7 +194,7 @@ export default function App() {
             <path
               d='M18.364 9.77818L20.6642 12.0784L18.3637 14.3788C14.849 17.8935 9.15049 17.8935 5.63577 14.3788L3.33558 12.0786L5.63604 9.77818C9.15075 6.26346 14.8492 6.26346 18.364 9.77818Z'
               stroke='#F5F5F5'
-              stroke-width='2'
+              strokeWidth='2'
             />
             <circle cx='12' cy='12' r='3' fill='#F5F5F5' />
           </svg>
@@ -269,7 +307,9 @@ export default function App() {
       </div>
 
       <svg
+        name='grid'
         onMouseMove={(e) => handleOnMousemoveOnCanvas(e)}
+        onClick={(e) => handleOnClickOnCanvas(e)}
         z-index='1'
         width={WINDOW_WIDTH}
         height={WINDOW_HEIGHT}
@@ -291,24 +331,36 @@ export default function App() {
 
         {Rects.map((rec, i) => {
           return (
-            <rect
-              // z-index='1000'
-              key={rec.id}
-              onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
-              onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
-              // onDrag={(e) => handleOnmousemove(e)}
-              x={rec.x}
-              y={rec.y}
-              width={rec.width}
-              height={rec.heigth}
-              fill={rec.color}
-              onClick={(e) => handleRectClick(e, rec.id)}
-              onMouseDown={(e) => handleDown(e, rec.id)}
-              onTouchStart={(e) => handleDown(e, rec.id)}
-              onMouseUp={(e) => handleUp(e)}
-              onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
-              onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
-            />
+            <g key={'rectangle' + rec.id}>
+              {rec.selected && (
+                <rect
+                  x={rec.x - 4}
+                  y={rec.y - 4}
+                  width={rec.width + 8}
+                  height={rec.heigth + 8}
+                  // fill='#0EA5E9'
+                  stroke='#0EA5E9'
+                />
+              )}
+              <rect
+                // z-index='1000'
+
+                onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+                onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
+                // onDrag={(e) => handleOnmousemove(e)}
+                x={rec.x}
+                y={rec.y}
+                width={rec.width}
+                height={rec.heigth}
+                fill={rec.color}
+                onClick={(e) => handleRectClick(e, rec.id)}
+                onMouseDown={(e) => handleDown(e, rec.id)}
+                onTouchStart={(e) => handleDown(e, rec.id)}
+                onMouseUp={(e) => handleUp(e)}
+                onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
+                onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
+              />
+            </g>
           )
         })}
 
