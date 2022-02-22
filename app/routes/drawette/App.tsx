@@ -11,9 +11,11 @@ const ScreenMousePositionOnCanvas = atom({})
 const MousePositionOnCanvas = atom({})
 const ScreenMousePosition = atom({ x: 600, y: 400 })
 
-const ShowHelpersAtom = atom(true)
+const ShowHelpersAtom = atom(false)
 const ObjectSelected = atom(false)
+const Drawing = atom(false)
 const MouseDownAtom = atom('')
+const ToolChoosed = atom('move')
 const MousePosition = atom({ x: 600, y: 400 })
 const ObjectList = atom<
   {
@@ -49,6 +51,8 @@ export default function App() {
   const [Rects, setRects] = useAtom(ObjectList)
   const [selected, setSelected] = useAtom(ObjectSelected)
 
+  const [startDrawing, setStartDrawing] = useAtom(Drawing)
+
   let mousePose0 = { x: 50, y: 50 }
   let shapePose0 = { x: 0, y: 0 }
 
@@ -75,6 +79,7 @@ export default function App() {
   }
   function handleOnMouseMove(e, id) {
     e.stopPropagation()
+    e.preventDefault()
     // console.log('mouse location:', e.clientX, e.clientY)
     // let bx = e.target.x.baseVal.value
     // let by = e.target.y.baseVal.value
@@ -157,6 +162,21 @@ export default function App() {
     e: MouseEvent<SVGSVGElement, MouseEvent>
   ): void {
     e.stopPropagation()
+
+    // startDrawing &&
+    setRects([
+      ...Rects,
+      {
+        selected: false,
+        id: uuid(),
+        x: WINDOW_WIDTH / 4,
+        y: WINDOW_HEIGHT / 4,
+        width: 100,
+        heigth: 100,
+        color: `rgba(255, 0, 0)`,
+      },
+    ])
+
     console.log('----mouse click', e)
     setRects([
       ...Rects.map((r) => {
@@ -165,6 +185,23 @@ export default function App() {
         }
         return r
       }),
+    ])
+  }
+
+  function hundleAddRectangleToolClick(e) {
+    setRects([
+      ...Rects,
+      {
+        selected: false,
+        id: uuid(),
+        x: WINDOW_WIDTH / 4,
+        y: WINDOW_HEIGHT / 4,
+        width: 100,
+        heigth: 100,
+        color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+          Math.random() * 255
+        )}, ${Math.floor(Math.random() * 255)})`,
+      },
     ])
   }
 
@@ -184,7 +221,7 @@ export default function App() {
         <ShowHelpersButton cn={'button showHelpers'}>
           {' '}
           <svg
-            name='move'
+            name='showHelpers'
             width='24'
             height='24'
             viewBox='0 0 24 24'
@@ -220,7 +257,7 @@ export default function App() {
               />
             </svg>
           </Button>
-          <Button>
+          <Button hundleOnClick={hundleAddRectangleToolClick}>
             <svg
               name='rectangle'
               width='24'
@@ -404,27 +441,15 @@ export default function App() {
   )
 }
 
-export function Button({ cn = 'button', children }) {
+export function Button({ cn = 'button', hundleOnClick, children }) {
   const [Rects, setRects] = useAtom(ObjectList)
+  const [startDrawing, setStartDrawing] = useAtom(Drawing)
 
-  function hundleToolClick(e) {
-    // e.stopProppagation()
-    // console.log(Rects)
-    setRects([
-      ...Rects,
-      {
-        selected: false,
-        id: uuid(),
-        x: WINDOW_WIDTH / 4,
-        y: WINDOW_HEIGHT / 4,
-        width: 100,
-        heigth: 100,
-        color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-          Math.random() * 255
-        )}, ${Math.floor(Math.random() * 255)})`,
-      },
-    ])
-  }
+  // function hundleToolClick(e) {
+  //   setStartDrawing(true)
+  //   // e.stopProppagation()
+  //   // console.log(Rects)
+
   function handleOnMouseOver(e) {
     // console.log(e)
     // this.style.background = '#0F0'
@@ -442,7 +467,7 @@ export function Button({ cn = 'button', children }) {
       onMouseOut={(e) => handleOnMouseout(e)}
       // onMouseOut={(e) => (this.style.background = '#00F')}
       className={cn}
-      onClick={(e) => hundleToolClick(e)}
+      onClick={(e) => hundleOnClick(e)}
     >
       <div className='icon24'>{children}</div>
     </button>
@@ -478,4 +503,22 @@ export function ShowHelpersButton({ cn = 'button', children }) {
       <div className='icon24'>{children}</div>
     </button>
   )
+}
+
+export function addRectangle() {
+  const [Rects, setRects] = useAtom(ObjectList)
+  setRects([
+    ...Rects,
+    {
+      selected: false,
+      id: uuid(),
+      x: WINDOW_WIDTH / 4,
+      y: WINDOW_HEIGHT / 4,
+      width: 100,
+      heigth: 100,
+      color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+        Math.random() * 255
+      )}, ${Math.floor(Math.random() * 255)})`,
+    },
+  ])
 }
