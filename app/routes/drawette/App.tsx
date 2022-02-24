@@ -7,6 +7,9 @@ import { v4 as uuid } from 'uuid'
 let WINDOW_WIDTH = 1400
 let WINDOW_HEIGHT = 800
 
+let diffX = 0
+let diffY = 0
+
 function log(x: any) {
   console.log(x)
 }
@@ -15,7 +18,7 @@ const ScreenMousePositionOnCanvas = atom({})
 const MousePositionOnCanvas = atom({})
 const ScreenMousePosition = atom({ x: 600, y: 400 })
 
-const ShowHelpersAtom = atom(false)
+const ShowHelpersAtom = atom(true)
 const ObjectSelected = atom(false)
 const Drawing = atom(false)
 const MouseDownAtom = atom('')
@@ -67,6 +70,7 @@ export default function App() {
   function handleRectClick(e, id) {
     e.stopPropagation()
     // console.log(e.target.key, id)
+
     setRects([
       ...Rects.map((r) => {
         if (r.id === id) {
@@ -116,8 +120,8 @@ export default function App() {
               ...r,
               id: id,
               selected: false,
-              x: e.clientX - 50,
-              y: e.clientY - 50,
+              x: e.clientX - diffX,
+              y: e.clientY - diffY,
             }
           }
           return r
@@ -144,6 +148,8 @@ export default function App() {
 
   function handleDown(e, i) {
     setMouseDown((prev) => 'mouse down')
+    diffX = e.clientX - e.target.x.baseVal.value
+    diffY = e.clientY - e.target.y.baseVal.value
     // console.log('----mouse down', e)
     // logMouse()
     // shapePose0 = { x: e.target.x.baseVal.value, y: e.target.x.baseVal.value }
@@ -460,16 +466,18 @@ export default function App() {
 
               <foreignObject
                 id='text'
-                x={rec.x + 50}
-                y={rec.y + 50}
+                x={rec.x}
+                y={rec.y}
                 width={rec.width + 8}
-                height='50'
+                height={rec.width + 8}
               >
-                <input
-                  placeholder={rec.text}
-                  style={{}}
-                  onChange={(e) => handleOnTextChange(e, rec.id)}
-                />
+                <div className='input-Container'>
+                  <input
+                    placeholder={i}
+                    style={{}}
+                    onChange={(e) => handleOnTextChange(e, rec.id)}
+                  />
+                </div>
               </foreignObject>
 
               <rect
@@ -501,13 +509,20 @@ export default function App() {
           <g>
             {mouseDown === 'mouse down' && (
               <>
-                <rect x='0' y='700' width='1600' height='10' fill='#00eeff' />
+                <rect
+                  style={{ bottom: 0 }}
+                  x='0'
+                  // y='700'
+                  width='1600'
+                  height='1'
+                  fill='#00eeff11'
+                />
                 <text x='1200' y='50' fill='#00eeff'>
-                  mousePosition: {mousePosition.x},{mousePosition.y}
+                  {/* mousePosition: {mousePosition.x},{mousePosition.y} */}
                 </text>
                 <text x='1200' y='70' fill='#ff5100'>
-                  screenMousePosition: {screenMousePosition.x},
-                  {screenMousePosition.y}
+                  {/* screenMousePosition: {screenMousePosition.x}, */}
+                  {/* {screenMousePosition.y} */}
                 </text>
               </>
             )}
@@ -523,23 +538,30 @@ export default function App() {
               mousePosition: {mousePositiononOnCanvas.x},
               {mousePositiononOnCanvas.y}
             </text>
-            <text x='12' y='70' fill='#ff5100'>
+
+            <text x='12' y='70' fill='#00eeff'>
+              diff: {diffX},{diffY}
+            </text>
+            {/* <text x='12' y='70' fill='#ff5100'>
               screenMousePosition: {screenMousePositionOnCanvas.x},
               {screenMousePositionOnCanvas.y}
-            </text>
-
-            {Rects.map((r, i) => (
-              <>
-                <text key={r.id} x='12' y={90 + 16 * i} fill='#ff00b7'>
-                  {/* RectId:{r.id}  */}
-                  i: {i} Pos: {r.x},{r.y} ----{'>'}{' '}
-                  {r.selected ? 'selected' : 'not selected'}
-                </text>
-              </>
-            ))}
+            </text> */}
           </g>
         )}
       </svg>
+
+      {showHelpers && (
+        // Show Helpers and Stats
+
+        <div className='info-pannel'>
+          {Rects.map((r, i) => (
+            <div className='info-item' key={r.id}>
+              {'►  ' /* RectId:{r.id}  */} {i} {r.text} -- {r.x},{r.y}
+              {r.selected ? ' 😁' : ''}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -627,4 +649,30 @@ export function addRectangle() {
       textEdit: false,
     },
   ])
+}
+
+function side() {
+  return (
+    <svg>
+      <foreignObject
+        x='12'
+        y={90}
+        fill='#ff00b7'
+        width='300'
+        // height={90 + 16 * Rects.length}
+        height='550'
+      >
+        <div className='info-pannel'>
+          {Rects.map((r, i) => (
+            <div className='info-item' key={r.id}>
+              {/* RectId:{r.id}  */}
+              i: {i} {r.text}
+              Pos: {r.x},{r.y}
+              {r.selected ? '---' : ''}
+            </div>
+          ))}
+        </div>
+      </foreignObject>
+    </svg>
+  )
 }
