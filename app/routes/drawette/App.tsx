@@ -7,6 +7,10 @@ import { v4 as uuid } from 'uuid'
 let WINDOW_WIDTH = 1400
 let WINDOW_HEIGHT = 800
 
+function log(x: any) {
+  console.log(x)
+}
+
 const ScreenMousePositionOnCanvas = atom({})
 const MousePositionOnCanvas = atom({})
 const ScreenMousePosition = atom({ x: 600, y: 400 })
@@ -15,8 +19,9 @@ const ShowHelpersAtom = atom(false)
 const ObjectSelected = atom(false)
 const Drawing = atom(false)
 const MouseDownAtom = atom('')
-const ToolChoosed = atom('move')
+const ToolChoosed = atom('')
 const MousePosition = atom({ x: 600, y: 400 })
+
 const ObjectList = atom<
   {
     id: string
@@ -26,6 +31,8 @@ const ObjectList = atom<
     heigth: number
     color: string
     selected: boolean
+    text: string
+    textEdit: boolean
   }[]
 >([])
 
@@ -41,14 +48,15 @@ export default function App() {
   const [screenMousePositionOnCanvas, setScreenMousePositionOnCanvas] = useAtom(
     ScreenMousePositionOnCanvas
   )
+  const [Rects, setRects] = useAtom(ObjectList)
 
   const [showHelpers, setShowHelpers] = useAtom(ShowHelpersAtom)
+  const [tool, setTool] = useAtom(ToolChoosed)
 
   const [mouseDown, setMouseDown] = useAtom(MouseDownAtom)
   const [mousePosition, setMousePosition] = useAtom(MousePosition)
   const [screenMousePosition, setScreenMousePosition] =
     useAtom(ScreenMousePosition)
-  const [Rects, setRects] = useAtom(ObjectList)
   const [selected, setSelected] = useAtom(ObjectSelected)
 
   const [startDrawing, setStartDrawing] = useAtom(Drawing)
@@ -58,7 +66,7 @@ export default function App() {
 
   function handleRectClick(e, id) {
     e.stopPropagation()
-    console.log(e.target.key, id)
+    // console.log(e.target.key, id)
     setRects([
       ...Rects.map((r) => {
         if (r.id === id) {
@@ -73,6 +81,25 @@ export default function App() {
     ])
   }
 
+  function handleOnDoubleClick(e, id) {
+    // setMouseDown((prev) => 'mouse down')
+    log(e)
+
+    // mouseDown === 'mouse down' &&
+    setRects([
+      ...Rects.map((r) => {
+        if (r.id === id) {
+          r = {
+            ...r,
+            selected: true,
+            text: 'M',
+            textEdit: true,
+          }
+        }
+        return r
+      }),
+    ])
+  }
   function handleMouseLeave(e, id) {
     // setMouseDown((prev) => 'mouse down')
     handleOnMouseMove(e, id)
@@ -80,19 +107,6 @@ export default function App() {
   function handleOnMouseMove(e, id) {
     e.stopPropagation()
     e.preventDefault()
-    // console.log('mouse location:', e.clientX, e.clientY)
-    // let bx = e.target.x.baseVal.value
-    // let by = e.target.y.baseVal.value
-    // e.target.x.baseVal.value = e.clientX
-    // e.target.y.baseVal.value = e.clientY
-
-    // let mpx = mousePosition.x
-    // let mpy = mousePosition.y
-    // mouseDown === 'mouse down' &&
-    //   setMousePosition((prev) => ({
-    //     x: e.clientX + (bx - mpx),
-    //     y: e.clientY + (by - mpy),
-    //   }))
 
     mouseDown === 'mouse down' &&
       setRects([
@@ -109,18 +123,6 @@ export default function App() {
           return r
         }),
       ])
-    // setRects(Rects => ([
-    //   ...Rects.filter((r) => r.id !== id),
-    //   {
-    //     selected: false,
-    //     id: id,
-    //     x: e.clientX - 50,
-    //     y: e.clientY - 50,
-    //     width: 100,
-    //     heigth: 100,
-    //     color: r.color,
-    //   },
-    // ]))
 
     mouseDown === 'mouse down' &&
       setScreenMousePosition((prev) => ({
@@ -138,9 +140,6 @@ export default function App() {
       x: e.screenX,
       y: e.screenY,
     }))
-  }
-  function logMouse() {
-    console.log(mouseDown)
   }
 
   function handleDown(e, i) {
@@ -174,21 +173,26 @@ export default function App() {
         width: 100,
         heigth: 100,
         color: `rgba(255, 0, 0)`,
+        text: '',
+        textEdit: false,
       },
     ])
 
-    console.log('----mouse click', e)
+    // console.log('----mouse click', e)
     setRects([
       ...Rects.map((r) => {
         if (r.selected) {
           r.selected = false
+          r.textEdit = false
         }
         return r
       }),
     ])
   }
 
-  function hundleAddRectangleToolClick(e) {
+  function handleAddRectangleToolClick(e) {
+    setTool((p) => 'addRectangle')
+
     setRects([
       ...Rects,
       {
@@ -201,10 +205,41 @@ export default function App() {
         color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
           Math.random() * 255
         )}, ${Math.floor(Math.random() * 255)})`,
+        text: 'R',
+        textEdit: false,
       },
     ])
   }
 
+  function handleMoveToolClick(e) {
+    setTool((p) => 'move')
+  }
+  function handleAddLinkToolClick(e) {
+    setTool((p) => 'addLink')
+  }
+  function handleAddTextToolClick(e) {
+    setTool((p) => 'addText')
+  }
+  function handleAddOthersToolClick(e) {
+    setTool((p) => 'addOhers')
+  }
+
+  function handleOnTextChange(
+    e: ChangeEvent<HTMLInputElement>,
+    id: string
+  ): void {
+    log(Rects)
+    setRects([
+      ...Rects.map((r) => {
+        if (r.id == id) {
+          r.selected = true
+          r.textEdit = true
+          r.text = e.target.value
+        }
+        return r
+      }),
+    ])
+  }
   // RETURN
   // RETURN
   // RETURN
@@ -240,7 +275,10 @@ export default function App() {
 
       <div className='topbar'>
         <div className='toolbar'>
-          <Button cn={'button selected'}>
+          <Button
+            cn={` ${tool == 'move' && 'selected'}`}
+            hundleOnClick={handleMoveToolClick}
+          >
             {' '}
             <svg
               name='move'
@@ -257,7 +295,10 @@ export default function App() {
               />
             </svg>
           </Button>
-          <Button hundleOnClick={hundleAddRectangleToolClick}>
+          <Button
+            cn={` ${tool == 'addRectangle' && 'selected'}`}
+            hundleOnClick={handleAddRectangleToolClick}
+          >
             <svg
               name='rectangle'
               width='24'
@@ -277,7 +318,10 @@ export default function App() {
               />
             </svg>
           </Button>
-          <Button>
+          <Button
+            cn={` ${tool == 'addLink' && 'selected'}`}
+            hundleOnClick={handleAddLinkToolClick}
+          >
             <svg
               name='link'
               width='24'
@@ -294,7 +338,10 @@ export default function App() {
               />
             </svg>
           </Button>
-          <Button>
+          <Button
+            cn={` ${tool == 'addText' && 'selected'}`}
+            hundleOnClick={handleAddTextToolClick}
+          >
             <svg
               name='text'
               width='24'
@@ -325,7 +372,10 @@ export default function App() {
               />
             </svg>
           </Button>
-          <Button>
+          <Button
+            cn={` ${tool == 'addOthers' && 'selected'}`}
+            hundleOnClick={handleAddOthersToolClick}
+          >
             <svg
               name='others'
               width='24'
@@ -354,6 +404,10 @@ export default function App() {
         fill='none'
         xmlns='http://www.w3.org/2000/svg'
       >
+        <filter id='filter'>
+          {/* <feMorphology operator='erode' radius='30' /> */}
+          {/* <feGaussianBlur stdDeviation='5' /> */}
+        </filter>
         <rect width='100%' height='100%' fill='#18181B' />
 
         {/* <rect
@@ -379,23 +433,64 @@ export default function App() {
                   stroke='#0EA5E9'
                 />
               )}
+
               <rect
                 // z-index='1000'
-
-                onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
-                onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
+                // filter='url(#erode)'
+                rx='15'
+                // onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+                // onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
                 // onDrag={(e) => handleOnmousemove(e)}
                 x={rec.x}
                 y={rec.y}
                 width={rec.width}
                 height={rec.heigth}
                 fill={rec.color}
+                // onClick={(e) => handleRectClick(e, rec.id)}
+                // onMouseDown={(e) => handleDown(e, rec.id)}
+                // onTouchStart={(e) => handleDown(e, rec.id)}
+                // onMouseUp={(e) => handleUp(e)}
+                // onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
+                // onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
+              />
+
+              {/* <text x={rec.x + 50} y={rec.y + 50} fill='#dcd2ff'>
+                {rec.text}
+              </text> */}
+
+              <foreignObject
+                id='text'
+                x={rec.x + 50}
+                y={rec.y + 50}
+                width={rec.width + 8}
+                height='50'
+              >
+                <input
+                  placeholder={rec.text}
+                  style={{}}
+                  onChange={(e) => handleOnTextChange(e, rec.id)}
+                />
+              </foreignObject>
+
+              <rect
+                // z-index='1000'
+                //Primary Layer
+
+                onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+                onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
+                // onDrag={(e) => handleOnmousemove(e)}
+                x={rec.x - 4}
+                y={rec.y - 4}
+                width={rec.width + 8}
+                height={rec.heigth + 8}
+                fill='#00000000'
                 onClick={(e) => handleRectClick(e, rec.id)}
                 onMouseDown={(e) => handleDown(e, rec.id)}
                 onTouchStart={(e) => handleDown(e, rec.id)}
                 onMouseUp={(e) => handleUp(e)}
                 onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
                 onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
+                onDoubleClick={(e) => handleOnDoubleClick(e, rec.id)}
               />
             </g>
           )
@@ -417,6 +512,13 @@ export default function App() {
               </>
             )}
 
+            {/* <foreignObject x='20' y='20' width='160' height='160'>
+              <div>Tool Choosed: {tool}</div>
+            </foreignObject> */}
+
+            <text x='12' y='20' fill='#2bff00'>
+              Tool Choosed: {tool}
+            </text>
             <text x='12' y='50' fill='#00eeff'>
               mousePosition: {mousePositiononOnCanvas.x},
               {mousePositiononOnCanvas.y}
@@ -429,7 +531,8 @@ export default function App() {
             {Rects.map((r, i) => (
               <>
                 <text key={r.id} x='12' y={90 + 16 * i} fill='#ff00b7'>
-                  RectId:{r.id} i: {i} Pos: {r.x},{r.y} ----{'>'}{' '}
+                  {/* RectId:{r.id}  */}
+                  i: {i} Pos: {r.x},{r.y} ----{'>'}{' '}
                   {r.selected ? 'selected' : 'not selected'}
                 </text>
               </>
@@ -467,7 +570,7 @@ export function Button({ cn = 'button', hundleOnClick, children }) {
       onMouseOut={(e) => handleOnMouseout(e)}
       // onMouseOut={(e) => (this.style.background = '#00F')}
       className={cn}
-      onClick={(e) => hundleOnClick(e)}
+      onClick={hundleOnClick}
     >
       <div className='icon24'>{children}</div>
     </button>
@@ -510,6 +613,7 @@ export function addRectangle() {
   setRects([
     ...Rects,
     {
+      text: '',
       selected: false,
       id: uuid(),
       x: WINDOW_WIDTH / 4,
@@ -519,6 +623,8 @@ export function addRectangle() {
       color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
         Math.random() * 255
       )}, ${Math.floor(Math.random() * 255)})`,
+
+      textEdit: false,
     },
   ])
 }

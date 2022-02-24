@@ -49,7 +49,7 @@
   border-radius: 16px;
 }
 
-.button {
+button {
   /* Auto layout */
 
   display: flex;
@@ -80,7 +80,7 @@
 }
 
 .selected {
-  /* background: linear-gradient(35deg, #18181b, #18181b); */
+  background: linear-gradient(35deg, #18181b, #18181b);
   /* background-color: #00e; */
   /* box-shadow: 0px 2px 8px rgba(0, 71, 252, 0.946),
     0px 8px 14px -6px rgba(212, 0, 255, 0.748); */
@@ -118,10 +118,23 @@ button:focus {
 }
 
 button:focus {
-  outline: 1px solid #ffffff22;
+  /* outline: 1px solid #ffffff22; */
   outline-offset: 1px;
 }
 
 button:active {
   transform: scale(0.99);
+}
+
+input {
+  background: transparent;
+  border: none;
+  color: rgba(255, 253, 253);
+  font-size: 1.6em;
+  width: fit-content;
+  /* text-align: center; */
+}
+
+#text {
+  display: flex;
 }
