@@ -39,6 +39,20 @@ const ObjectList = atom<
   }[]
 >([])
 
+const LinkList = atom<
+  {
+    id: string
+    x1: number
+    x2: number
+    y1: number
+    y2: number
+
+    color: string
+    selected: boolean
+    text: string
+  }[]
+>([])
+
 export default function App() {
   // useEffect(() => {
   //   WINDOW_WIDTH = window.innerWidth
@@ -52,6 +66,7 @@ export default function App() {
     ScreenMousePositionOnCanvas
   )
   const [Rects, setRects] = useAtom(ObjectList)
+  const [Links, setLink] = useAtom(LinkList)
 
   const [showHelpers, setShowHelpers] = useAtom(ShowHelpersAtom)
   const [tool, setTool] = useAtom(ToolChoosed)
@@ -111,8 +126,8 @@ export default function App() {
   function handleOnMouseMove(e, id) {
     e.stopPropagation()
     e.preventDefault()
-
     mouseDown === 'mouse down' &&
+      tool == 'move' &&
       setRects([
         ...Rects.map((r) => {
           if (r.id === id) {
@@ -126,6 +141,25 @@ export default function App() {
           }
           return r
         }),
+      ])
+
+    mouseDown === 'mouse down' &&
+      tool == 'addLink' &&
+      setLink([
+        ...Links,
+        {
+          selected: true,
+          id: uuid(),
+          x1: 100,
+          y1: 400,
+          x2: 100,
+          y2: 100,
+          text: '',
+
+          color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+            Math.random() * 255
+          )}, ${Math.floor(Math.random() * 255)})`,
+        },
       ])
 
     mouseDown === 'mouse down' &&
@@ -426,83 +460,104 @@ export default function App() {
           onClick={(e) => handleClick(e)}
         /> */}
 
-        {Rects.map((rec, i) => {
-          return (
-            <g key={'rectangle' + rec.id}>
-              {rec.selected && (
+        <g name='Rects'>
+          {Rects.map((rec, i) => {
+            return (
+              <g key={'rectangle' + rec.id}>
+                {rec.selected && (
+                  <rect
+                    x={rec.x - 4}
+                    y={rec.y - 4}
+                    width={rec.width + 8}
+                    height={rec.heigth + 8}
+                    // fill='#0EA5E9'
+                    stroke='#0EA5E9'
+                  />
+                )}
+
                 <rect
+                  // z-index='1000'
+                  // filter='url(#erode)'
+                  rx='15'
+                  // onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+                  // onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
+                  // onDrag={(e) => handleOnmousemove(e)}
+                  x={rec.x}
+                  y={rec.y}
+                  width={rec.width}
+                  height={rec.heigth}
+                  fill={rec.color}
+                  // onClick={(e) => handleRectClick(e, rec.id)}
+                  // onMouseDown={(e) => handleDown(e, rec.id)}
+                  // onTouchStart={(e) => handleDown(e, rec.id)}
+                  // onMouseUp={(e) => handleUp(e)}
+                  // onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
+                  // onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
+                />
+
+                {/* <text x={rec.x + 50} y={rec.y + 50} fill='#dcd2ff'>
+                {rec.text}
+              </text> */}
+
+                <foreignObject
+                  id='text'
+                  x={rec.x}
+                  y={rec.y}
+                  width={rec.width + 8}
+                  height={rec.width + 8}
+                >
+                  <div className='input-Container'>
+                    <input
+                      placeholder={i}
+                      style={{}}
+                      onChange={(e) => handleOnTextChange(e, rec.id)}
+                    />
+                  </div>
+                </foreignObject>
+
+                <rect
+                  // z-index='1000'
+                  //Primary Layer
+
+                  onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
+                  onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
+                  // onDrag={(e) => handleOnmousemove(e)}
                   x={rec.x - 4}
                   y={rec.y - 4}
                   width={rec.width + 8}
                   height={rec.heigth + 8}
-                  // fill='#0EA5E9'
-                  stroke='#0EA5E9'
+                  fill='#00000000'
+                  onClick={(e) => handleRectClick(e, rec.id)}
+                  onMouseDown={(e) => handleDown(e, rec.id)}
+                  onTouchStart={(e) => handleDown(e, rec.id)}
+                  onMouseUp={(e) => handleUp(e)}
+                  onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
+                  onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
+                  onDoubleClick={(e) => handleOnDoubleClick(e, rec.id)}
                 />
-              )}
+              </g>
+            )
+          })}
+        </g>
 
-              <rect
-                // z-index='1000'
-                // filter='url(#erode)'
-                rx='15'
-                // onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
-                // onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
-                // onDrag={(e) => handleOnmousemove(e)}
-                x={rec.x}
-                y={rec.y}
-                width={rec.width}
-                height={rec.heigth}
-                fill={rec.color}
-                // onClick={(e) => handleRectClick(e, rec.id)}
-                // onMouseDown={(e) => handleDown(e, rec.id)}
-                // onTouchStart={(e) => handleDown(e, rec.id)}
-                // onMouseUp={(e) => handleUp(e)}
-                // onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
-                // onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
-              />
-
-              {/* <text x={rec.x + 50} y={rec.y + 50} fill='#dcd2ff'>
-                {rec.text}
-              </text> */}
-
-              <foreignObject
-                id='text'
-                x={rec.x}
-                y={rec.y}
-                width={rec.width + 8}
-                height={rec.width + 8}
-              >
-                <div className='input-Container'>
-                  <input
-                    placeholder={i}
-                    style={{}}
-                    onChange={(e) => handleOnTextChange(e, rec.id)}
+        <g name='Links'>
+          {Links.map((l, i) => {
+            return (
+              <g key={'Links' + l.id}>
+                {l.selected && (
+                  <rect
+                    x='500'
+                    y='500'
+                    width='200'
+                    height='200'
+                    fill='#0EA5E9'
+                    stroke='#0EA5E9'
                   />
-                </div>
-              </foreignObject>
-
-              <rect
-                // z-index='1000'
-                //Primary Layer
-
-                onMouseMove={(e) => handleOnMouseMove(e, rec.id)}
-                onTouchMove={(e) => handleOnMouseMove(e, rec.id)}
-                // onDrag={(e) => handleOnmousemove(e)}
-                x={rec.x - 4}
-                y={rec.y - 4}
-                width={rec.width + 8}
-                height={rec.heigth + 8}
-                fill='#00000000'
-                onClick={(e) => handleRectClick(e, rec.id)}
-                onMouseDown={(e) => handleDown(e, rec.id)}
-                onTouchStart={(e) => handleDown(e, rec.id)}
-                onMouseUp={(e) => handleUp(e)}
-                onMouseLeave={(e) => handleMouseLeave(e, rec.id)}
-                onTouchEnd={(e) => handleMouseLeave(e, rec.id)}
-                onDoubleClick={(e) => handleOnDoubleClick(e, rec.id)}
-              />
-            </g>
-          )
-        })}
+                )}
+              </g>
+            )
+          })}
+        </g>
 
         {showHelpers && (
           // Show Helpers and Stats
