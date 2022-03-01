@@ -1,8 +1,6 @@
 import { atom, useAtom } from 'jotai'
 import { v4 as uuid } from 'uuid'
 
-// Hello
-
 // let WINDOW_WIDTH = atom(window.innerWidth)
 // let WINDOW_HEIGHT = atom(window.innerHeight)
 
